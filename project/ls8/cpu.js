@@ -2,6 +2,14 @@
  * LS-8 v2.0 emulator skeleton code
  */
 
+
+const instruction = {
+    HLT: 1,
+    MUL: 170,
+    PRN: 67,
+    LDI: 153
+
+};
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
@@ -87,16 +95,16 @@ class CPU {
         // outlined in the LS-8 spec.
 
         switch(IR) {
-            case 153:
+            case instruction.LDI:
                 this.ram.write(b1, b2);
                 break;
-            case 67:
+            case instruction.PRN:
                 console.log(this.ram.read(b1));
                 break;
-            case 170:
+            case instruction.MUL:
                 this.ram.write(b1, this.alu('MUL', b1, b2));
                 break;
-            case 1:
+            case instruction.HLT:
                 this.stopClock();
                 break;
             default:
