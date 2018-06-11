@@ -1,7 +1,9 @@
 /**
  * LS-8 v2.0 emulator skeleton code
  */
-
+const PRN = '01000011';
+const LDI = '10011001'
+const HLT = '00000001';
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
@@ -69,20 +71,38 @@ class CPU {
         // index into memory of the instruction that's about to be executed
         // right now.)
 
-        // !!! IMPLEMENT ME
+        const IR = this.ram.read(this.PC);
+
 
         // Debugging output
-        //console.log(`${this.PC}: ${IR.toString(2)}`);
+        // console.log(`${this.PC}: ${IR.toString(2)}`);
 
         // Get the two bytes in memory _after_ the PC in case the instruction
         // needs them.
 
         // !!! IMPLEMENT ME
+        const b1 = this.ram.read(this.PC + 1);
+        const b2 = this.ram.read(this.PC + 2);
 
+        let continueNext = true;
         // Execute the instruction. Perform the actions for the instruction as
         // outlined in the LS-8 spec.
 
-        // !!! IMPLEMENT ME
+        switch(IR) {
+            case 153:
+                this.ram.write(b1, b2);
+                break;
+            case 67:
+                console.log(this.ram.read(b1));
+                break;
+            case 1:
+                this.stopClock();
+                break;
+            default:
+                this.stopClock();
+                console.log('error');
+        }
+
 
         // Increment the PC register to go to the next instruction. Instructions
         // can be 1, 2, or 3 bytes long. Hint: the high 2 bits of the
@@ -90,6 +110,12 @@ class CPU {
         // for any particular instruction.
         
         // !!! IMPLEMENT ME
+
+        if (continueNext) {
+            let increment = IR.toString(2);
+            while (increment.length < 8) increment = "0" + increment;
+            this.PC = (this.PC + 1) + parseInt(increment.slice(0, 2), 2);
+        }
     }
 }
 
