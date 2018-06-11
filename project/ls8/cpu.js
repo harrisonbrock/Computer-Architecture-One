@@ -1,9 +1,7 @@
 /**
  * LS-8 v2.0 emulator skeleton code
  */
-const PRN = '01000011';
-const LDI = '10011001'
-const HLT = '00000001';
+
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
@@ -57,7 +55,7 @@ class CPU {
     alu(op, regA, regB) {
         switch (op) {
             case 'MUL':
-                // !!! IMPLEMENT ME
+                return (this.ram.read(regA) * this.ram.read(regB));
                 break;
         }
     }
@@ -94,6 +92,9 @@ class CPU {
                 break;
             case 67:
                 console.log(this.ram.read(b1));
+                break;
+            case 170:
+                this.ram.write(b1, this.alu('MUL', b1, b2));
                 break;
             case 1:
                 this.stopClock();
