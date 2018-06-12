@@ -63,7 +63,7 @@ class CPU {
     alu(op, regA, regB) {
         switch (op) {
             case 'MUL':
-                return (this.ram.read(regA) * this.ram.read(regB));
+                return (this.reg[regA] * this.reg[regB]);
                 break;
         }
     }
@@ -96,13 +96,16 @@ class CPU {
 
         switch(IR) {
             case instruction.LDI:
-                this.ram.write(b1, b2);
+                // this.ram.write(b1, b2);
+                this.reg[b1] = b2;
                 break;
             case instruction.PRN:
-                console.log(this.ram.read(b1));
+                // console.log(this.ram.read(b1));
+                console.log(this.reg[b1]);
                 break;
             case instruction.MUL:
                 this.ram.write(b1, this.alu('MUL', b1, b2));
+                this.reg[b1] = this.alu('MUL', b1, b2);
                 break;
             case instruction.HLT:
                 this.stopClock();
@@ -112,7 +115,6 @@ class CPU {
                 console.log('error');
         }
 
-
         // Increment the PC register to go to the next instruction. Instructions
         // can be 1, 2, or 3 bytes long. Hint: the high 2 bits of the
         // instruction byte tells you how many bytes follow the instruction byte
@@ -120,11 +122,13 @@ class CPU {
         
         // !!! IMPLEMENT ME
 
-        if (continueNext) {
-            let increment = IR.toString(2);
-            while (increment.length < 8) increment = "0" + increment;
-            this.PC = (this.PC + 1) + parseInt(increment.slice(0, 2), 2);
-        }
+        // if (continueNext) {
+        //     let increment = IR.toString(2);
+        //     while (increment.length < 8) increment = "0" + increment;
+        //     this.PC = (this.PC + 1) + parseInt(increment.slice(0, 2), 2);
+        // }
+        const insLen = (IR >> 6) + 1;
+        this.PC += insLen;
     }
 }
 
