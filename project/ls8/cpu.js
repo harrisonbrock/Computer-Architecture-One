@@ -87,8 +87,8 @@ class CPU {
         // needs them.
 
         // !!! IMPLEMENT ME
-        const b1 = this.ram.read(this.PC + 1);
-        const b2 = this.ram.read(this.PC + 2);
+        const operandA = this.ram.read(this.PC + 1);
+        const operandB = this.ram.read(this.PC + 2);
 
         let continueNext = true;
         // Execute the instruction. Perform the actions for the instruction as
@@ -96,16 +96,16 @@ class CPU {
 
         switch(IR) {
             case instruction.LDI:
-                // this.ram.write(b1, b2);
-                this.reg[b1] = b2;
+                // this.ram.write(b1, operandB);
+                this.reg[operandA] = operandB;
                 break;
             case instruction.PRN:
                 // console.log(this.ram.read(b1));
-                console.log(this.reg[b1]);
+                console.log(this.reg[operandA]);
                 break;
             case instruction.MUL:
-                this.ram.write(b1, this.alu('MUL', b1, b2));
-                this.reg[b1] = this.alu('MUL', b1, b2);
+                this.ram.write(operandA, this.alu('MUL', operandA, operandB));
+                this.reg[operandA] = this.alu('MUL', operandA, operandB);
                 break;
             case instruction.HLT:
                 this.stopClock();
