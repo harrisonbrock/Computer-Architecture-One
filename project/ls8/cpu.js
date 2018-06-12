@@ -25,8 +25,18 @@ class CPU {
         
         // Special-purpose registers
         this.PC = 0; // Program Counter
+        this.tableSetup();
     }
-    
+
+    tableSetup() {
+        this.instructionRunner = {
+            153: this.LDI.bind(this),
+            1: this.HLT.bind(this),
+            67: this.PRN.bind(this),
+            170: this.MUL.bind(this)
+        };
+    }
+
     /**
      * Store value in memory address, useful for program loading
      */
@@ -72,63 +82,31 @@ class CPU {
      * Advances the CPU one cycle
      */
     tick() {
-        // Load the instruction register (IR--can just be a local variable here)
-        // from the memory address pointed to by the PC. (I.e. the PC holds the
-        // index into memory of the instruction that's about to be executed
-        // right now.)
 
         const IR = this.ram.read(this.PC);
-
-
-        // Debugging output
-        // console.log(`${this.PC}: ${IR.toString(2)}`);
-
-        // Get the two bytes in memory _after_ the PC in case the instruction
-        // needs them.
-
-        // !!! IMPLEMENT ME
         const operandA = this.ram.read(this.PC + 1);
         const operandB = this.ram.read(this.PC + 2);
 
-        let continueNext = true;
-        // Execute the instruction. Perform the actions for the instruction as
-        // outlined in the LS-8 spec.
+        this.instructionRunner[IR](operandA, operandB);
 
-        switch(IR) {
-            case instruction.LDI:
-                // this.ram.write(b1, operandB);
-                this.reg[operandA] = operandB;
-                break;
-            case instruction.PRN:
-                // console.log(this.ram.read(b1));
-                console.log(this.reg[operandA]);
-                break;
-            case instruction.MUL:
-                this.ram.write(operandA, this.alu('MUL', operandA, operandB));
-                this.reg[operandA] = this.alu('MUL', operandA, operandB);
-                break;
-            case instruction.HLT:
-                this.stopClock();
-                break;
-            default:
-                this.stopClock();
-                console.log('error');
-        }
-
-        // Increment the PC register to go to the next instruction. Instructions
-        // can be 1, 2, or 3 bytes long. Hint: the high 2 bits of the
-        // instruction byte tells you how many bytes follow the instruction byte
-        // for any particular instruction.
-        
-        // !!! IMPLEMENT ME
-
-        // if (continueNext) {
-        //     let increment = IR.toString(2);
-        //     while (increment.length < 8) increment = "0" + increment;
-        //     this.PC = (this.PC + 1) + parseInt(increment.slice(0, 2), 2);
-        // }
         const insLen = (IR >> 6) + 1;
         this.PC += insLen;
+    }
+
+    LDI(register, value) {
+        this.reg[register] = value;
+    }
+
+    PRN(register) {
+        console.log(this.reg[register]);
+    }
+
+    HLT() {
+        this.stopClock();
+    }
+
+    MUL(registerA, registerB) {
+       this.reg[registerA] = this.alu('MUL', registerA, registerB);
     }
 }
 
