@@ -3,15 +3,21 @@
  */
 
 
-const instruction = {
-    HLT: 1,
-    MUL: 170,
-    PRN: 67,
-    LDI: 153,
-    PUSH: 0b001001101,
-    POP: 0b001001100
-
-};
+// const instruction = {
+//     HLT: 1,
+//     MUL: 170,
+//     ADD: 0b10101000,
+//     DIV: 0b10101011,
+//     SUB: 0b10101001,
+//     PRN: 67,
+//     LDI: 153,
+//     PUSH: 0b001001101,
+//     POP: 0b001001100,
+//     JMP: 0b001010000,
+//     CALL: 0b001001000,
+//     RET: 0b00001001
+//
+// };
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
@@ -29,8 +35,11 @@ class CPU {
         // Special-purpose registers
         this.PC = 0; // Program Counter
         this.SP = this.reg[7];
+        this.JMP = 0; // Jump tp index;
+
         this.tableSetup();
     }
+
 
     tableSetup() {
         this.instructionRunner = {
@@ -39,7 +48,11 @@ class CPU {
             67: this.PRN.bind(this),
             170: this.MUL.bind(this),
             0b001001101: this.PUSH.bind(this),
-            0b001001100: this.POP.bind(this)
+            0b001001100: this.POP.bind(this),
+            0b001001000: this.CALL.bind(this),
+            0b001010000: this.JUMP.bind(this),
+            0b00001001: this.RETURN.bind(this)
+
 
         };
     }
@@ -82,6 +95,9 @@ class CPU {
             case 'MUL':
                 return (this.reg[regA] * this.reg[regB]);
                 break;
+            case 'ADD':
+                return 1;
+                break;
         }
     }
 
@@ -99,6 +115,8 @@ class CPU {
         const insLen = (IR >> 6) + 1;
         this.PC += insLen;
     }
+
+
 
     LDI(register, value) {
         this.reg[register] = value;
@@ -125,6 +143,25 @@ class CPU {
     POP(operand) {
         this.reg[operand] = this.ram.read(this.SP);
         this.SP++;
+    }
+
+    CALL(operand) {
+        this.SP--;
+        this.poke(this.SP, this.PC + 2);
+        this.PC = this.reg[operand];
+        this.JMP = 1;
+
+    }
+
+    RETURN() {
+        this.PC = this.ram.reg[this.SP];
+        this.SP++;
+        this.JMP = 1;
+    }
+
+    JUMP(operand) {
+        this.PC = this.reg[operand];
+        this.JMP = 1;
     }
 }
 
