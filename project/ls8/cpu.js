@@ -31,7 +31,7 @@ class CPU {
 
         this.reg = new Array(8).fill(0); // General-purpose registers R0-R7
         this.reg[7] = 0xf4;
-        
+
         // Special-purpose registers
         this.PC = 0; // Program Counter
         this.SP = this.reg[7];
@@ -96,7 +96,7 @@ class CPU {
                 return (this.reg[regA] * this.reg[regB]);
                 break;
             case 'ADD':
-                return (this.reg[regA] + this.reg[regB] & 255);
+                return (this.reg[regA] + this.reg[regB]);
                 break;
         }
     }
@@ -114,6 +114,8 @@ class CPU {
 
         const insLen = (IR >> 6) + 1;
         this.PC += insLen;
+
+        this.JMP = 0;
     }
 
 
