@@ -7,7 +7,9 @@ const instruction = {
     HLT: 1,
     MUL: 170,
     PRN: 67,
-    LDI: 153
+    LDI: 153,
+    PUSH: 0b001001101,
+    POP: 0b001001100
 
 };
 /**
@@ -22,9 +24,11 @@ class CPU {
         this.ram = ram;
 
         this.reg = new Array(8).fill(0); // General-purpose registers R0-R7
+        this.reg[7] = 0xf4;
         
         // Special-purpose registers
         this.PC = 0; // Program Counter
+        this.SP = this.reg[7];
         this.tableSetup();
     }
 
@@ -33,7 +37,10 @@ class CPU {
             153: this.LDI.bind(this),
             1: this.HLT.bind(this),
             67: this.PRN.bind(this),
-            170: this.MUL.bind(this)
+            170: this.MUL.bind(this),
+            0b001001101: this.PUSH.bind(this),
+            0b001001100: this.POP.bind(this)
+
         };
     }
 
@@ -107,6 +114,17 @@ class CPU {
 
     MUL(registerA, registerB) {
        this.reg[registerA] = this.alu('MUL', registerA, registerB);
+    }
+
+    PUSH(operand) {
+
+        this.SP--;
+        this.poke(this.SP, this.reg[operand])
+    }
+
+    POP(operand) {
+        this.reg[operand] = this.ram.read(this.SP);
+        this.SP++;
     }
 }
 
