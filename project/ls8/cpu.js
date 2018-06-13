@@ -40,13 +40,13 @@ class CPU {
         this.tableSetup();
     }
 
-
     tableSetup() {
         this.instructionRunner = {
             153: this.LDI.bind(this),
             1: this.HLT.bind(this),
             67: this.PRN.bind(this),
             170: this.MUL.bind(this),
+            0b10101000: this.ADD.bind(this),
             0b001001101: this.PUSH.bind(this),
             0b001001100: this.POP.bind(this),
             0b001001000: this.CALL.bind(this),
@@ -96,7 +96,7 @@ class CPU {
                 return (this.reg[regA] * this.reg[regB]);
                 break;
             case 'ADD':
-                return 1;
+                return (this.reg[regA] + this.reg[regB] & 255);
                 break;
         }
     }
@@ -134,6 +134,9 @@ class CPU {
        this.reg[registerA] = this.alu('MUL', registerA, registerB);
     }
 
+    ADD(registerA, registerB) {
+        this.reg[registerA] = this.alu('ADD', registerA, registerB);
+    }
     PUSH(operand) {
 
         this.SP--;
