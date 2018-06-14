@@ -135,7 +135,7 @@ class CPU {
     }
 
     MUL(registerA, registerB) {
-        Console.log('MUL');
+        console.log('MUL');
        this.reg[registerA] = this.alu('MUL', registerA, registerB);
     }
 
