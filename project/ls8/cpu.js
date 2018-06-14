@@ -18,6 +18,13 @@
 //     RET: 0b00001001
 //
 // };
+
+const FLAG_EQ = 0;
+const FLAG_GT = 1;
+const FLAG_LT = 2;
+
+const IM = 0x05; // interrupt mask
+const IS = 0x06; // interrupt status R6
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
@@ -32,11 +39,15 @@ class CPU {
         this.reg = new Array(8).fill(0); // General-purpose registers R0-R7
         this.reg[7] = 0xf4;
 
+        this.reg[IM] = 0;
+        this.reg[IS] = 0;
         // Special-purpose registers
         this.PC = 0; // Program Counter
         this.SP = this.reg[7];
-        this.JMP = 0; // Jump tp index;
+
+
         this.pcAdvance = true;
+        this.interruptsEnable = true;
 
         this.tableSetup();
     }
@@ -52,7 +63,8 @@ class CPU {
             0b001001100: this.POP.bind(this),
             0b001001000: this.CALL.bind(this),
             0b001010000: this.JUMP.bind(this),
-            0b00001001: this.RETURN.bind(this)
+            0b00001001: this.RETURN.bind(this),
+            0b10011010: this.ST.bind(this)
 
 
         };
@@ -154,12 +166,6 @@ class CPU {
     }
 
     CALL(operand) {
-        // this.SP--;
-        // this.ram.write(this.SP, this.PC + 2);
-        // const address = this.reg[operand];
-        // this.PC = address;
-        // this.pcAdvance = false;
-        // // console.log(this.PC);
         this._push(this.PC + 2);
         this.PC = this.reg[operand];
 
@@ -175,6 +181,10 @@ class CPU {
         // return value;
         this.PC = this._pop();
         this.pcAdvance = false;
+    }
+
+    ST(regA, regB) {
+        this.ram.write(this.reg[regA], this.reg[regB]);
     }
 
     JUMP(operand) {
