@@ -36,6 +36,7 @@ class CPU {
         this.PC = 0; // Program Counter
         this.SP = this.reg[7];
         this.JMP = 0; // Jump tp index;
+        this.pcAdvance = true;
 
         this.tableSetup();
     }
@@ -106,19 +107,20 @@ class CPU {
      */
     tick() {
 
+
         const IR = this.ram.read(this.PC);
         const operandA = this.ram.read(this.PC + 1);
         const operandB = this.ram.read(this.PC + 2);
 
         this.instructionRunner[IR](operandA, operandB);
 
-        const insLen = (IR >> 6) + 1;
-        this.PC += insLen;
+        if (this.pcAdvance) {
+            const insLen = (IR >> 6) + 1;
+            this.PC += insLen;
+        }
 
-        this.JMP = 0;
+        this.pcAdvance = true;
     }
-
-
 
     LDI(register, value) {
         this.reg[register] = value;
@@ -133,6 +135,7 @@ class CPU {
     }
 
     MUL(registerA, registerB) {
+        Console.log('MUL');
        this.reg[registerA] = this.alu('MUL', registerA, registerB);
     }
 
@@ -151,22 +154,44 @@ class CPU {
     }
 
     CALL(operand) {
-        this.SP--;
-        this.poke(this.SP, this.PC + 2);
+        // this.SP--;
+        // this.ram.write(this.SP, this.PC + 2);
+        // const address = this.reg[operand];
+        // this.PC = address;
+        // this.pcAdvance = false;
+        // // console.log(this.PC);
+        this._push(this.PC + 2);
         this.PC = this.reg[operand];
-        this.JMP = 1;
 
     }
 
     RETURN() {
-        this.PC = this.ram.reg[this.SP];
-        this.SP++;
-        this.JMP = 1;
+
+        // const value = this.ram.read(this.reg[this.SP]);
+        // this.SP++;
+        //
+        // this.pcAdvance = false;
+        // console.log(this.PC);
+        // return value;
+        this.PC = this._pop();
+        this.pcAdvance = false;
     }
 
     JUMP(operand) {
         this.PC = this.reg[operand];
-        this.JMP = 1;
+        this.pcAdvance = false;
+    }
+
+    _push(value) {
+        this.SP--;
+        this.ram.write(this.reg[this.SP], value);
+        this.pcAdvance = false;
+    }
+
+    _pop() {
+        const value = this.ram.read(this.reg[this.SP]);
+        this.SP++;
+        return value;
     }
 }
 
