@@ -180,10 +180,14 @@ class CPU {
                     this.interruptsEnable = false;
                     this.reg[IS] &= interruptMask[index];
 
+                    // push pc on tack
                     this._push(this.PC);
 
+                    // push flag one stack
                     this._push(this.FL);
 
+
+                    // push all regs on stack
                     for (let register = 0; register <=6; register++) {
                         this._push(this.reg[register]);
                     }
