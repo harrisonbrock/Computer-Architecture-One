@@ -2,6 +2,7 @@
  * LS-8 v2.0 emulator skeleton code
  */
 
+// For most of the bitwise stuff I looked up the code in Hacker's Delight 2nd Edition
 const fs = require('fs');
 // const instruction = {
 //     HLT: 1,
@@ -19,6 +20,8 @@ const fs = require('fs');
 //
 // };
 
+
+
 const FLAG_EQ = 0;
 const FLAG_GT = 1;
 const FLAG_LT = 2;
@@ -26,6 +29,9 @@ const FLAG_LT = 2;
 const IM = 0x05; // interrupt mask
 const IS = 0x06; // interrupt status R6
 
+
+// interrupts
+// right now I only I'm doing timer
 const interruptMask = [
     (0x1 << 0)
 ];
@@ -71,7 +77,10 @@ class CPU {
             0b00001001: this.RETURN.bind(this),
             0b10011010: this.ST.bind(this),
             0b01000010: this.PRA.bind(this),
-            0b00001011: this.IRET.bind(this)
+            0b00001011: this.IRET.bind(this),
+            0b10100000: this.CMP.bind(this),
+            0b01010010: this.JNE.bind(this),
+            0b01010001: this.JEQ.bind(this)
 
 
         };
@@ -81,16 +90,19 @@ class CPU {
         value += value;
 
         if (value) {
-            this.FL |= (1 << flag);
+            this.FL |= (1 << flag); // right shift
         }
         else {
-            this.FL &= ~(1 << flag);
+
+            this.FL &= ~(1 << flag); // not right shift
         }
 
     }
 
     getFlag(flag) {
-        return (this.FL & (1 << flag)) >> flag;
+
+        // AND and right shift
+        return (this.FL & (1 << flag)) >> flag; // left shift
     }
 
     raiseInterrupt(number) {
@@ -145,6 +157,11 @@ class CPU {
             case 'ADD':
                 return (this.reg[regA] + this.reg[regB]);
                 break;
+            case 'CMP':
+                this.setFlag(FLAG_EQ, this.reg[regA] === this.reg[regB]);
+                this.setFlag(FLAG_GT, this.reg[regA] > this.reg[regB]);
+                this.setFlag(FLAG_LT, this.reg[regA] < this.reg[regB]);
+                break;
         }
     }
 
@@ -155,11 +172,11 @@ class CPU {
 
         if (this.interruptsEnable) {
 
-            const interrputs = this.reg[IS] & this.reg[IM];
+            const interrupts = this.reg[IS] & this.reg[IM];
 
             for (let index = 0; index < 8; index++) {
 
-                if(((interrputs >> index) & 0x01) === 1){
+                if(((interrupts >> index) & 0x01) === 1){
                     this.interruptsEnable = false;
                     this.reg[IS] &= interruptMask[index];
 
@@ -232,12 +249,6 @@ class CPU {
 
     RETURN() {
 
-        // const value = this.ram.read(this.reg[this.SP]);
-        // this.SP++;
-        //
-        // this.pcAdvance = false;
-        // console.log(this.PC);
-        // return value;
         this.PC = this._pop();
         this.pcAdvance = false;
     }
@@ -263,6 +274,23 @@ class CPU {
         this.pcAdvance = false;
     }
 
+    CMP(regA, regB) {
+        this.alu('CMP', regA, regB);
+    }
+
+    JEQ(reg) {
+        if (this.getFlag(FLAG_EQ)) {
+            this.PC = this.reg[reg];
+            this.pcAdvance = false;
+        }
+    }
+
+    JNE(reg) {
+        if(!this.getFlag(FLAG_EQ)) {
+            this.PC = this.reg[reg];
+            this.pcAdvance = false;
+        }
+    }
     PRA(reg) {
         fs.writeSync(process.stdout.fd, String.fromCharCode(this.reg[reg]));
     }
